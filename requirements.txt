@@ -1,0 +1,8 @@
+# Dependencies for the project
+sqlite3
+tkinter
+pyglet
+
+# To install tkinter, run the following command:
+sudo apt-get install python3-tk
+
