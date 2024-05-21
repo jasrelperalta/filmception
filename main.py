@@ -3,6 +3,7 @@
 import tkinter as tk
 import pyglet
 import sqlite3
+import csv
 
 # CONSTANTS
 DB_NAME = "filmception.db"
@@ -101,6 +102,9 @@ def searchMovie(window):
     searchButton = tk.Button(mainFrame, text="Search", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
     searchButton.pack(pady=20)
 
+    # Get the text from the search box and search for the movie
+    searchButton.config(command=lambda: findMovie(searchBox.get()))
+
     # Create Results Box
     resultsBox = tk.Label(mainFrame, text="Results", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
     resultsBox.pack(pady=20)
@@ -124,11 +128,102 @@ def searchMovie(window):
 
     return window
 
+# Find Movie function
+def findMovie(movieName):
+    print(f"Find Movie: {movieName}")
+    # Connect to the database
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Search for the movie
+    c.execute("SELECT * FROM films WHERE title LIKE ?", (f"%{movieName}%",))
+    results = c.fetchall()
+
+    print(len(results))
+
+    # Print the results
+    for result in results:
+        print(result)
+
+    # Close the connection
+    conn.close()
+
+
+
 # Upload Poster function
 def uploadPoster():
     print("Upload Poster")
 
+# Initialize the database
+def initializeDB():
+    # Connect to the database
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Create the tables
+    if c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='films'").fetchone():
+        print("Database already initialized!")
+
+        # Ask the user if they want to reinitialize the database
+        reinitialize = input("Do you want to reinitialize the database? (y/n): ")
+
+        if reinitialize.lower() == "y":
+            c.execute("DROP TABLE films")
+            c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
+            print("Database reinitialized successfully!")
+    else:
+        c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
+        print("Database initialized successfully!")
+
+    # Commit the changes
+    conn.commit()
+
+    # Close the connection
+    conn.close()
+
+    # Populate the database
+    populateDB()
+
+# Populate the database
+def populateDB():
+    # Connect to the database
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Open the CSV file
+    with open("./filmception/films.csv", "r") as file:
+        reader = csv.reader(file)
+        next(reader)
+
+        counter = 0
+        len_reader = len(list(reader))
+        file.seek(0)
+
+        print(f"Length of reader: {len_reader+1}")
+        print(f"Length of database: {len(c.execute('SELECT * FROM films').fetchall())}")
+
+        # Check if the database is already populated
+        if len(c.execute("SELECT * FROM films").fetchall()) == len_reader+1:
+            print("Database already populated!")
+            return
+        
+        # Insert the data into the database
+        for row in reader:
+            print(f"[{counter+1}/{len_reader}]Current row: {row[1]}")
+            c.execute("INSERT INTO films (id, title, year, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?)", (row[0], row[1], row[2], row[4], row[5], row[6]))
+            counter += 1
+
+    # Commit the changes
+    conn.commit()
+
+    # Close the connection
+    conn.close()
+
 # Main function
 if __name__ == "__main__":
+    # Initialize the database
+    initializeDB()
+
+    # Create the main window
     mainFrame = createWindow()
     
