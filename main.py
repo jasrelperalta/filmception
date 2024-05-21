@@ -94,8 +94,8 @@ def searchMovie(window):
     subLabel.pack(pady=10)
 
     # Create Search Box
-    SearchBox = tk.Entry(mainFrame, width=40, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
-    SearchBox.pack(pady=20)
+    searchBox = tk.Entry(mainFrame, width=40, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
+    searchBox.pack(pady=20)
 
     # Create Search Button beside the Search Box
     searchButton = tk.Button(mainFrame, text="Search", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
@@ -113,26 +113,22 @@ def searchMovie(window):
     subLabel.place(x=subLabelX, y=100)
 
     searchButtonWidth = searchButton.winfo_width()
-    searchBoxWidth = SearchBox.winfo_width()
+    searchBoxWidth = searchBox.winfo_width()
     searchButtonX = (mainFrame.winfo_width() // 2) - (searchButtonWidth // 2)
     searchBoxX = (mainFrame.winfo_width() // 2) - (searchBoxWidth // 2)
     searchButton.place(x=searchButtonX, y=190)
-    SearchBox.place(x=searchBoxX, y=155)
+    searchBox.place(x=searchBoxX, y=155)
 
     # Run the main loop
     window.mainloop()
 
     return window
 
-
-# Search Button
-    # Results Box
-
-
 # Upload Poster function
 def uploadPoster():
     print("Upload Poster")
 
+# Main function
 if __name__ == "__main__":
     mainFrame = createWindow()
     

@@ -16,24 +16,13 @@ def createDB():
     c = conn.cursor()
 
     # Create the tables
-    c.execute("""CREATE TABLE IF NOT EXISTS films (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        year INTEGER NOT NULL,
-        director TEXT NOT NULL,
-        synopsis TEXT NOT NULL,
-        poster TEXT NOT NULL,
-        genre TEXT NOT NULL,
-    )""")
+    c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
 
     # Commit the changes
     conn.commit()
 
     # Close the connection
     conn.close()
-
-if __name__ == "__main__":
-    createDB()
 
 # populate the database
 def populateDB():
@@ -46,12 +35,27 @@ def populateDB():
         reader = csv.reader(file)
         next(reader)
 
+        counter = 0
+        len_reader = len(list(reader))
+        file.seek(0)
+
         # Insert the data into the database
         for row in reader:
-            c.execute("INSERT INTO films (title, year, director, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?)", row)
+            print(f"[{counter+1}/{len_reader}]Current row: {row[1]}")
+            # Example line: 
+            # 940721,Godzilla Minus One,2023-11-03,"Postwar Japan is at its lowest point when a new crisis emerges in the form of a giant monster, baptized in the horrific power of the atomic bomb.",/hkxxMIGaiCTmrEArK7J56JTKUlB.jpg,"[{'id': 878, 'name': 'Science Fiction'}, {'id': 27, 'name': 'Horror'}, {'id': 28, 'name': 'Action'}]"
+            c.execute("INSERT INTO films (id, title, year, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?)", (row[0], row[1], row[2], row[4], row[5], row[6]))
+            counter += 1
 
     # Commit the changes
     conn.commit()
 
     # Close the connection
     conn.close()
+
+# Initialize the database
+
+if __name__ == "__main__":
+    createDB()
+    populateDB()
+    print("Database initialized successfully!")

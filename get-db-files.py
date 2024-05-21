@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 # Initialize the environment variables and other necessary configurations
 load_dotenv("secret.env")
 
-csv_file = "movie_dataset_combined.csv"
+csv_file = "movie_dataset_combined2.csv"
 
 if not os.path.exists(csv_file):
     print("CSV File does not exist")
@@ -58,7 +58,6 @@ def create_session():
 # append the necessary data in an input file
 def store_data(data):
     with open("films.csv", "a") as file:
-        print("Currently storing data of film: ", data.get("title"))
         writer = csv.writer(file)
         writer.writerow([data.get("id"), data.get("title"), data.get("release_date"), data.get("director"), data.get("overview"), data.get("poster_path"), data.get("genres")])
 
@@ -66,8 +65,11 @@ def store_data(data):
 def get_db_files():
     with open(csv_file, "r") as file:
         reader = csv.reader(file)
+        len_reader = len(list(reader))
+        file.seek(0)
         next(reader)
 
+        counter = 0
         for row in reader:
             # get the film id
             film_id = row[0]
@@ -80,11 +82,13 @@ def get_db_files():
             }
 
             response = requests.get(url, headers=headers)
+            print(f"[{counter}/{len_reader}]Getting data for {row}")
 
             # store the data in the database
             if response.status_code == 200:
                 data = response.json()
                 store_data(data)
+                counter += 1
             else:
                 print("Failed to get data")
                 print(response.json().get("status_message"))
