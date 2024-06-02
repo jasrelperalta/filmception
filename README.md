@@ -25,6 +25,8 @@ python3 main.py
 - sqlite3
 - pyglet
 - numpy
+- python3-pil
+- python3-pil.imagetk
 
 ## Author
 

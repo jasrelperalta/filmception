@@ -1,6 +1,7 @@
 # The main file for the desktop application
 import pyglet, sqlite3, csv, sys, logging, os
 import tkinter as tk
+from PIL import Image, ImageTk
 
 # Suppress TensorFlow logging
 logging.getLogger('tensorflow').disabled = True
@@ -39,7 +40,6 @@ def createWindow():
     mainFrame = tk.Frame(window, width=720, height=640, bg=bgColor)
     mainFrame.grid(row=0, column=0)
     mainFrame.pack_propagate(False)
-
 
     # Create the main label and sub label, and pack them closely together
     subLabel = tk.Label(mainFrame, text="Welcome to", font=("Caviar Dreams", 32), bg=bgColor, fg=txtColor)
@@ -110,10 +110,6 @@ def searchMovie(window):
     # Get the text from the search box and search for the movie
     searchButton.config(command=lambda: findMovie(window, searchBox.get()))
 
-    # Create Results Box
-    resultsBox = tk.Label(mainFrame, text="Results", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
-    resultsBox.pack(pady=20)
-
     # Center the label and buttons
     mainFrame.update_idletasks()
 
@@ -140,9 +136,8 @@ def findMovie(window, movieName):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # Search for the movie
-    c.execute("SELECT * FROM films WHERE title LIKE ?", (f"%{movieName}%",))
-    
+    # Search for the movie sorted by year in descending order
+    c.execute("SELECT * FROM films WHERE title LIKE ? ORDER BY year DESC", (f"%{movieName}%",))
     # Get the results of the search in paginated form
     results = c.fetchall()
 
@@ -165,14 +160,17 @@ def searchResults(window, results):
     subLabel = tk.Label(mainFrame, text="Movie Results", font=("Caviar Dreams", 32), bg=bgColor, fg=txtColor)
     subLabel.pack(pady=10)
 
-    # Create the results box
-    resultsBox = tk.Listbox(mainFrame, width=80, height=20, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
-    resultsBox.pack(pady=20)
-
-    # Insert the results into the results box
+    # Create a button for each result with the poster and title
+    images = []
     for result in results:
-        resultsBox.insert(tk.END, result[1])
+        # Load the poster
+        poster = Image.open(f"img/posters/{result[0]}.jpg").resize((80,100))
+        poster = ImageTk.PhotoImage(poster)
+        images.append(poster)
 
+        tk.Button(mainFrame, image=poster).pack(pady=10)
+        tk.Label(mainFrame, text=result[1], font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack(pady=10)
+        
     # Create the back button
     backButton = tk.Button(mainFrame, text="Back", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
     backButton.pack(pady=20)
@@ -182,8 +180,16 @@ def searchResults(window, results):
 
     # Center the label and buttons
     mainFrame.update_idletasks()
+    
+    # Run the main loop
+    window.mainloop()
+
+    return window
 
     
+# Show Movie function
+def showMovie(window, movie):
+    print("Show Movie")
 
 # Upload Poster function
 def uploadPoster():
@@ -258,7 +264,8 @@ if __name__ == "__main__":
     # Get the model from the arguments
     if len(sys.argv) < 2:
         print("Usage: python main.py <model>")
-        sys.exit(1)
+        # sys.exit(1)
+        sys.argv.append("xception")
     model = preloadModel(sys.argv[1])
 
 
