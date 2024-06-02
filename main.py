@@ -1,9 +1,14 @@
 # The main file for the desktop application
-
+import pyglet, sqlite3, csv, sys, logging, os
 import tkinter as tk
-import pyglet
-import sqlite3
-import csv
+
+# Suppress TensorFlow logging
+logging.getLogger('tensorflow').disabled = True
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
+from keras.models import load_model # type: ignore
+
+
 
 # CONSTANTS
 DB_NAME = "filmception.db"
@@ -19,7 +24,7 @@ def createWindow():
     window = tk.Tk()
     window.title("FilmCeption")
     window.geometry("720x640")
-    window.iconphoto(False, tk.PhotoImage(file="filmception/img/icon.png"))
+    window.iconphoto(False, tk.PhotoImage(file="img/icon.png"))
     window.resizable(False, False)
 
     # Center the window
@@ -148,8 +153,6 @@ def findMovie(movieName):
     # Close the connection
     conn.close()
 
-
-
 # Upload Poster function
 def uploadPoster():
     print("Upload Poster")
@@ -166,7 +169,7 @@ def initializeDB():
         print("Reinitializing database...")
 
     c.execute("DROP TABLE films")
-    c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
+    c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, director TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
     print("Database reinitialized successfully!")
 
     # Commit the changes
@@ -195,8 +198,8 @@ def populateDB():
 
         # Insert the data into the database
         for row in reader:
-            print(f"[{counter+1}/{len_reader}]Current row: {row[1]}") # row[1] is the title of the movie
-            c.execute("INSERT INTO films (id, title, year, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?)", (row[0], row[1], row[2], row[4], row[5], row[6]))
+            # print(f"[{counter+1}/{len_reader}] Current row: {row[1]}")
+            c.execute("INSERT INTO films (id, title, year, director, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?, ?)", (row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
             counter += 1
 
     # Commit the changes
@@ -205,8 +208,28 @@ def populateDB():
     # Close the connection
     conn.close()
 
+# Preload the model
+def preloadModel(model: str):
+    if model == "vgg16":
+        print("Preloading VGG16 model...")
+        return load_model("models/vgg16-v2.keras")
+    elif model == "xception":
+        print("Preloading Xception model...")
+        return load_model("models/xception-v2.keras")
+    else:
+        print("Invalid model!")
+        sys.exit(1)
+    
+
 # Main function
 if __name__ == "__main__":
+    # Get the model from the arguments
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <model>")
+        sys.exit(1)
+    model = preloadModel(sys.argv[1])
+
+
     # Initialize the database
     initializeDB()
 
