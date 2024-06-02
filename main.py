@@ -171,10 +171,10 @@ def searchResults(window, results):
     
     # Create a scrollable frame for the results
     canvas = tk.Canvas(mainFrame, bg=bgColor)
-    canvas.pack(side="top", fill="both", expand=True, pady=10)
+    canvas.pack(side="top", fill="both", expand=True, pady=10, padx=10)
 
     resultsFrame = tk.Frame(canvas, bg=bgColor)
-    resultsFrame.pack(fill="both", expand=True)
+    resultsFrame.pack(fill="both")
 
     scrollbar = tk.Scrollbar(canvas, orient="vertical", command=canvas.yview)
     scrollbar.pack(side="right", fill="y")
@@ -185,19 +185,6 @@ def searchResults(window, results):
 
     counter = 0
     buttonList = []
-    # for result in results:
-    #     # Load the poster
-    #     poster = Image.open(f"img/posters/{result[0]}.jpg").resize((80,100))
-    #     poster = ImageTk.PhotoImage(poster)
-    #     images.append(poster)
-
-    #     tempDate = result[2].split("-")[0]
-    #     tempString = f"{result[1]} ({tempDate})"
-    #     tempButton = tk.Button(resultsFrame, image=poster).grid(row=counter, column=0)
-    #     tempButton.config(command=lambda: showMovie(window, result))
-    #     tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=counter, column=1)
-        
-    #     counter += 1
 
     for i in range(len(results)):
         # Load the poster
@@ -288,8 +275,16 @@ def findSimilarMovies(window, results):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # Search for the movie sorted by year in descending order
-    c.execute("SELECT * FROM films WHERE genre LIKE ? ORDER BY RANDOM() LIMIT 5", (f"%{results[0][0]}%",))
+    # Search for random movies containing the genres in the results, limit to 20
+    genreString = ""
+    for genre in results:
+        genreString += f"genre LIKE '%{genre[0]}%' AND "
+    genreString = genreString[:-5]
+
+    print(genreString)
+
+    c.execute(f"SELECT * FROM films WHERE {genreString} ORDER BY RANDOM() LIMIT 20")
+
     # Get the results of the search in paginated form
     results = c.fetchall()
 
