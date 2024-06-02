@@ -108,7 +108,7 @@ def searchMovie(window):
     searchButton.pack(pady=20)
 
     # Get the text from the search box and search for the movie
-    searchButton.config(command=lambda: findMovie(searchBox.get()))
+    searchButton.config(command=lambda: findMovie(window, searchBox.get()))
 
     # Create Results Box
     resultsBox = tk.Label(mainFrame, text="Results", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
@@ -134,7 +134,7 @@ def searchMovie(window):
     return window
 
 # Find Movie function
-def findMovie(movieName):
+def findMovie(window, movieName):
     print(f"Find Movie: {movieName}")
     # Connect to the database
     conn = sqlite3.connect(DB_NAME)
@@ -142,16 +142,48 @@ def findMovie(movieName):
 
     # Search for the movie
     c.execute("SELECT * FROM films WHERE title LIKE ?", (f"%{movieName}%",))
+    
+    # Get the results of the search in paginated form
     results = c.fetchall()
 
-    print(len(results))
-
-    # Print the results
-    for result in results:
-        print(result)
+    # Call the searchResults function
+    searchResults(window, results)
 
     # Close the connection
     conn.close()
+
+# Search results window function
+def searchResults(window, results):
+
+    # Update contents of the window to show a Search Box, a Search Button, and a Results Box
+    # Create the main frame
+    mainFrame = tk.Frame(window, width=720, height=640, bg=bgColor)
+    mainFrame.grid(row=0, column=0)
+    mainFrame.pack_propagate(False)
+
+    # Create the main label and sub label, and pack them closely together
+    subLabel = tk.Label(mainFrame, text="Movie Results", font=("Caviar Dreams", 32), bg=bgColor, fg=txtColor)
+    subLabel.pack(pady=10)
+
+    # Create the results box
+    resultsBox = tk.Listbox(mainFrame, width=80, height=20, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
+    resultsBox.pack(pady=20)
+
+    # Insert the results into the results box
+    for result in results:
+        resultsBox.insert(tk.END, result[1])
+
+    # Create the back button
+    backButton = tk.Button(mainFrame, text="Back", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
+    backButton.pack(pady=20)
+
+    # Back button command
+    backButton.config(command=lambda: searchMovie(window))
+
+    # Center the label and buttons
+    mainFrame.update_idletasks()
+
+    
 
 # Upload Poster function
 def uploadPoster():
