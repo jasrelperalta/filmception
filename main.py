@@ -1,7 +1,9 @@
 # The main file for the desktop application
 import pyglet, sqlite3, csv, sys, logging, os
 import tkinter as tk
+import numpy as np
 from PIL import Image, ImageTk
+from tkinter import filedialog
 
 # Suppress TensorFlow logging
 logging.getLogger('tensorflow').disabled = True
@@ -15,6 +17,7 @@ from keras.models import load_model # type: ignore
 DB_NAME = "filmception.db"
 bgColor = "#545454" # Gray
 txtColor = "#FFFFFF" # White
+genreList = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Drama", "Fantasy", "Romance", "Thriller"]
 
 pyglet.font.add_file("fonts/CaviarDreams.ttf")
 pyglet.font.add_file("fonts/ArsenicaTrial-Regular.ttf")
@@ -61,7 +64,7 @@ def createWindow():
     uploadButton.pack(pady=20)
 
     # Upload Poster button command
-    uploadButton.config(command=uploadPoster)
+    uploadButton.config(command=lambda: uploadPoster(mainFrame))
 
     # Center the buttons
     mainFrame.update_idletasks()
@@ -181,26 +184,35 @@ def searchResults(window, results):
     resultsFrame.bind("<Configure>", lambda event, canvas=canvas: onFrameConfigure(canvas))
 
     counter = 0
-    for result in results:
+    buttonList = []
+    # for result in results:
+    #     # Load the poster
+    #     poster = Image.open(f"img/posters/{result[0]}.jpg").resize((80,100))
+    #     poster = ImageTk.PhotoImage(poster)
+    #     images.append(poster)
+
+    #     tempDate = result[2].split("-")[0]
+    #     tempString = f"{result[1]} ({tempDate})"
+    #     tempButton = tk.Button(resultsFrame, image=poster).grid(row=counter, column=0)
+    #     tempButton.config(command=lambda: showMovie(window, result))
+    #     tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=counter, column=1)
+        
+    #     counter += 1
+
+    for i in range(len(results)):
         # Load the poster
-        poster = Image.open(f"img/posters/{result[0]}.jpg").resize((80,100))
+        poster = Image.open(f"img/posters/{results[i][0]}.jpg").resize((80,100))
         poster = ImageTk.PhotoImage(poster)
         images.append(poster)
 
-        tempDate = result[2].split("-")[0]
-        tempString = f"{result[1]} ({tempDate})"
-        tk.Button(resultsFrame, image=poster).grid(row=counter, column=0)
+        tempDate = results[i][2].split("-")[0]
+        tempString = f"{results[i][1]} ({tempDate})"
+        tempButton = tk.Button(resultsFrame, image=poster, command=lambda i=i: showMovie(window, results[i])).grid(row=counter, column=0)
+        buttonList.append(tempButton)
         tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=counter, column=1)
         
         counter += 1
         
-    # Create the back button
-    backButton = tk.Button(mainFrame, text="Back", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
-    backButton.pack(pady=20)
-
-    # Back button command
-    backButton.config(command=lambda: searchMovie(window))
-
     # Center the label and buttons
     mainFrame.update_idletasks()
     
@@ -213,10 +225,155 @@ def searchResults(window, results):
 # Show Movie function
 def showMovie(window, movie):
     print("Show Movie")
+    print(movie)
+
+# Handle the results of the prediction using thresholds
+def handleResults(results):
+    # Map the results to the genre list
+    res = {}
+    counter = 0
+    for key in genreList:
+        res[key] = results[0][counter]
+        counter += 1
+
+    # sort the results
+    sortedResults = sorted(res.items(), key=lambda x: x[1], reverse=True)
+
+    # Get the top 3 genres that have a value greater than 0.5
+    topGenres = []
+    for genre in sortedResults:
+        if genre[1] > 0.5:
+            topGenres.append(genre)
+        if len(topGenres) == 3:
+            return topGenres
+    
+    # if not empty, return the top genres
+    if len(topGenres) > 0:
+        return topGenres
+    
+    # If there are less than 3 genres with a value greater than 0.5, get the top 3 genres until 0.42
+    if len(topGenres) < 3:
+        for genre in sortedResults:
+            if genre[1] > 0.42:
+                topGenres.append(genre)
+            if len(topGenres) == 3:
+                return topGenres
+            
+    # if not empty, return the top genres
+    if len(topGenres) > 0:
+        return topGenres
+
+    # If there are still less than 3 genres, get the top 3 genres until 0.2
+    if len(topGenres) < 3:
+        for genre in sortedResults:
+            if genre[1] > 0.2:
+                topGenres.append(genre)
+            if len(topGenres) == 3:
+                return topGenres
+
+    # if not empty, return the top genres
+    if len(topGenres) > 0:
+        return topGenres
+    else:
+        # If there are still less than 3 genres, get the top genre
+        topGenres.append(sortedResults[0])
+
+    return topGenres
+
+# Find similar movies function
+def findSimilarMovies(window, results):
+    print("Genres predicted w threshold:", results)
+    print("Find Similar Movies")
+    # Connect to the database
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Search for the movie sorted by year in descending order
+    c.execute("SELECT * FROM films WHERE genre LIKE ? ORDER BY RANDOM() LIMIT 5", (f"%{results[0][0]}%",))
+    # Get the results of the search in paginated form
+    results = c.fetchall()
+
+    # Call the searchResults function
+    searchResults(window, results)
+
+    # Close the connection
+    conn.close()
+
+
+# Show Movie function
+def showPredictedMovie(window, results, filename):
+    print("Show Predicted Movie")
+    # create a canvas to display the results
+    # Create the main frame
+    mainFrame = tk.Frame(window, width=720, height=640, bg=bgColor)
+    mainFrame.grid(row=0, column=0)
+    mainFrame.pack_propagate(False)
+
+    # Create a button for each result with the poster and title
+    images = []
+
+    # Create a canvas to display the image and the genre labels beside it, place canvas under the sub label
+    canvas = tk.Canvas(mainFrame, bg=bgColor)
+    canvas.pack(pady=10)
+
+
+    # Insert image into the canvas
+    poster = Image.open(filename)
+    poster = poster.resize((250, 375), Image.ANTIALIAS)
+    poster = ImageTk.PhotoImage(poster)
+    images.append(poster)
+
+    # Handle the results of the prediction
+    results = handleResults(results)
+
+    tk.Label(canvas, image=poster).grid(row=0, column=0)
+
+    # Create the genre labels
+    for i in range(len(results)):
+        tempString = f"{results[i][0]}: {results[i][1]:.3f}"
+        tk.Label(canvas, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=i+1, column=0)
+
+    # Center the label and buttons
+    mainFrame.update_idletasks()
+
+    # Create the find similar movies button
+    findButton = tk.Button(mainFrame, text="Find Similar Movies", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
+    findButton.pack(pady=20)
+
+    # Find similar movies button command
+    findButton.config(command=lambda: findSimilarMovies(window, results))
+
+    # Run the main loop
+    window.mainloop()
 
 # Upload Poster function
-def uploadPoster():
+def uploadPoster(window):
     print("Upload Poster")
+    filename = filedialog.askopenfilename()
+    print(f"Selected file: {filename}")
+
+    # Open the image
+    if sys.argv[1] == "vgg16":
+        image = tf.keras.preprocessing.image.load_img(filename, target_size=(224, 224))
+        image = tf.keras.preprocessing.image.img_to_array(image)
+        image = np.expand_dims(image, axis=0)
+        image = tf.keras.applications.vgg16.preprocess_input(image)
+    else:
+        image = tf.keras.preprocessing.image.load_img(filename, target_size=(299, 299))
+        image = tf.keras.preprocessing.image.img_to_array(image)
+        image = np.expand_dims(image, axis=0)
+        image = tf.keras.applications.xception.preprocess_input(image)
+    
+    # predict the genre of the movie using the model
+    results = model.predict(image)
+
+    # Show the results of the prediction
+    print("Results of the prediction")
+    for i in range(len(results[0])):
+        print(f"{genreList[i]}: {results[0][i]}")
+
+    # Call the showPredictedMovie function
+    showPredictedMovie(window, results, filename)
 
 # Initialize the database
 def initializeDB():
