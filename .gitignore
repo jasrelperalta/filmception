@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 secret.env
 films.csv
+filmception.db
+img/posters/
