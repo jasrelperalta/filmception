@@ -10,8 +10,8 @@ DB_NAME = "filmception.db"
 bgColor = "#545454" # Gray
 txtColor = "#FFFFFF" # White
 
-pyglet.font.add_file("filmception/fonts/CaviarDreams.ttf")
-pyglet.font.add_file("filmception/fonts/ArsenicaTrial-Regular.ttf")
+pyglet.font.add_file("fonts/CaviarDreams.ttf")
+pyglet.font.add_file("fonts/ArsenicaTrial-Regular.ttf")
 
 # Main function
 def createWindow():
@@ -163,17 +163,11 @@ def initializeDB():
     # Create the tables
     if c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='films'").fetchone():
         print("Database already initialized!")
+        print("Reinitializing database...")
 
-        # Ask the user if they want to reinitialize the database
-        reinitialize = input("Do you want to reinitialize the database? (y/n): ")
-
-        if reinitialize.lower() == "y":
-            c.execute("DROP TABLE films")
-            c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
-            print("Database reinitialized successfully!")
-    else:
-        c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
-        print("Database initialized successfully!")
+    c.execute("DROP TABLE films")
+    c.execute("CREATE TABLE films (id INTEGER PRIMARY KEY, title TEXT, year TEXT, synopsis TEXT, poster TEXT, genre TEXT)")
+    print("Database reinitialized successfully!")
 
     # Commit the changes
     conn.commit()
@@ -190,26 +184,18 @@ def populateDB():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # Open the CSV file
-    with open("./filmception/films.csv", "r") as file:
-        reader = csv.reader(file)
-        next(reader)
-
+    # Open the CSV file containing the movie data
+    with open("films.csv", "r") as file:
+        # Set the count of the rows then reset the file pointer
         counter = 0
+        reader = csv.reader(file)
         len_reader = len(list(reader))
         file.seek(0)
+        next(reader)
 
-        print(f"Length of reader: {len_reader+1}")
-        print(f"Length of database: {len(c.execute('SELECT * FROM films').fetchall())}")
-
-        # Check if the database is already populated
-        if len(c.execute("SELECT * FROM films").fetchall()) == len_reader+1:
-            print("Database already populated!")
-            return
-        
         # Insert the data into the database
         for row in reader:
-            print(f"[{counter+1}/{len_reader}]Current row: {row[1]}")
+            print(f"[{counter+1}/{len_reader}]Current row: {row[1]}") # row[1] is the title of the movie
             c.execute("INSERT INTO films (id, title, year, synopsis, poster, genre) VALUES (?, ?, ?, ?, ?, ?)", (row[0], row[1], row[2], row[4], row[5], row[6]))
             counter += 1
 

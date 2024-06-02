@@ -6,7 +6,24 @@ FilmCeption is a desktop application that allows users to multilabel classify mo
 
 ## Usage
 
-To use the application, 
+To use the application, get the necessary files for the database first. NOTE: The database files are not included in the repository. To get the database files, run the following command ONCE (no need to run this command every time you run the application):
+
+    ```bash
+    python3 get_db-files.py
+    ```
+
+Then run the main application.
+
+    ```bash
+    python3 main.py
+    ```
+
+## Dependencies
+
+- tkinter
+- pyglet
+- 
+
 
 ## Author
 

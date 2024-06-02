@@ -13,7 +13,10 @@ from dotenv import load_dotenv
 # Initialize the environment variables and other necessary configurations
 load_dotenv("secret.env")
 
-csv_file = "movie_dataset_combined2.csv"
+csv_file = "movie-list.csv"
+
+# List of needed data
+need = ["id", "title", "release_date", "director", "overview", "poster_path", "genres"]
 
 if not os.path.exists(csv_file):
     print("CSV File does not exist")
@@ -59,7 +62,18 @@ def create_session():
 def store_data(data):
     with open("films.csv", "a") as file:
         writer = csv.writer(file)
-        writer.writerow([data.get("id"), data.get("title"), data.get("release_date"), data.get("director"), data.get("overview"), data.get("poster_path"), data.get("genres")])
+        # check if all the necessary data is present
+        for need_data in need:
+            if need_data not in data:
+                if need_data == "director":
+                    director = "Unknown"
+                    for i in data["credits"]["crew"]:
+                        if i["job"] == "Director":
+                            director = i["name"]
+                            break
+        writer.writerow([data.get("id"), data.get("title"), data.get("release_date"), director, data.get("overview"), data.get("poster_path"), data.get("genres")])
+                
+
 
 # loop to look for the films in the CSV file, to be get the necessary information about the films using the API
 def get_db_files():
@@ -70,11 +84,15 @@ def get_db_files():
         next(reader)
 
         counter = 0
+        # SKIP TO 9837
         for row in reader:
+            if counter < 9835:
+                counter += 1
+                continue
             # get the film id
             film_id = row[0]
 
-            url = f"https://api.themoviedb.org/3/movie/{film_id}"
+            url = f"https://api.themoviedb.org/3/movie/{film_id}?append_to_response=credits&language=en-US"
 
             headers = {
                 "accept": "application/json",
@@ -82,7 +100,7 @@ def get_db_files():
             }
 
             response = requests.get(url, headers=headers)
-            print(f"[{counter}/{len_reader}]Getting data for {row}")
+            print(f"Getting data for movie {counter+1}/{len_reader}")
 
             # store the data in the database
             if response.status_code == 200:
