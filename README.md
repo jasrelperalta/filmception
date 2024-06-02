@@ -20,9 +20,11 @@ python3 main.py
 
 ## Dependencies
 
+- tensorflow
 - tkinter
+- sqlite3
 - pyglet
-- 
+- numpy
 
 ## Author
 
