@@ -147,6 +147,9 @@ def findMovie(window, movieName):
     # Close the connection
     conn.close()
 
+def onFrameConfigure(canvas):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
 # Search results window function
 def searchResults(window, results):
 
@@ -162,14 +165,34 @@ def searchResults(window, results):
 
     # Create a button for each result with the poster and title
     images = []
+    
+    # Create a scrollable frame for the results
+    canvas = tk.Canvas(mainFrame, bg=bgColor)
+    canvas.pack(side="top", fill="both", expand=True, pady=10)
+
+    resultsFrame = tk.Frame(canvas, bg=bgColor)
+    resultsFrame.pack(fill="both", expand=True)
+
+    scrollbar = tk.Scrollbar(canvas, orient="vertical", command=canvas.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.create_window((0,0), window=resultsFrame, anchor="nw")
+    resultsFrame.bind("<Configure>", lambda event, canvas=canvas: onFrameConfigure(canvas))
+
+    counter = 0
     for result in results:
         # Load the poster
         poster = Image.open(f"img/posters/{result[0]}.jpg").resize((80,100))
         poster = ImageTk.PhotoImage(poster)
         images.append(poster)
 
-        tk.Button(mainFrame, image=poster).pack(pady=10)
-        tk.Label(mainFrame, text=result[1], font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack(pady=10)
+        tempDate = result[2].split("-")[0]
+        tempString = f"{result[1]} ({tempDate})"
+        tk.Button(resultsFrame, image=poster).grid(row=counter, column=0)
+        tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=counter, column=1)
+        
+        counter += 1
         
     # Create the back button
     backButton = tk.Button(mainFrame, text="Back", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
