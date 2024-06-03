@@ -113,19 +113,38 @@ def searchMovie(window):
     # Get the text from the search box and search for the movie
     searchButton.config(command=lambda: findMovie(window, searchBox.get()))
 
-    # Center the label and buttons
+    # Initialize variables containing genre labels to be used for checkboxes
+    actionCheck = tk.IntVar()
+    adventureCheck = tk.IntVar()
+    animationCheck = tk.IntVar()
+    comedyCheck = tk.IntVar()
+    crimeCheck = tk.IntVar()
+    dramaCheck = tk.IntVar()
+    fantasyCheck = tk.IntVar()
+    romanceCheck = tk.IntVar()
+    thrillerCheck = tk.IntVar()
+
+    # Create the genre checkboxes
+    actionBox = tk.Checkbutton(mainFrame, text="Action", variable=actionCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    actionBox.pack(pady=10)
+    adventureBox = tk.Checkbutton(mainFrame, text="Adventure", variable=adventureCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    adventureBox.pack(pady=10)
+    animationBox = tk.Checkbutton(mainFrame, text="Animation", variable=animationCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    animationBox.pack(pady=10)
+    comedyBox = tk.Checkbutton(mainFrame, text="Comedy", variable=comedyCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    comedyBox.pack(pady=10)
+    crimeBox = tk.Checkbutton(mainFrame, text="Crime", variable=crimeCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    crimeBox.pack(pady=10)
+    dramaBox = tk.Checkbutton(mainFrame, text="Drama", variable=dramaCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    dramaBox.pack(pady=10)
+    fantasyBox = tk.Checkbutton(mainFrame, text="Fantasy", variable=fantasyCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    fantasyBox.pack(pady=10)
+    romanceBox = tk.Checkbutton(mainFrame, text="Romance", variable=romanceCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    romanceBox.pack(pady=10)
+    thrillerBox = tk.Checkbutton(mainFrame, text="Thriller", variable=thrillerCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    thrillerBox.pack(pady=10)
+    
     mainFrame.update_idletasks()
-
-    subLabelWidth = subLabel.winfo_width()
-    subLabelX = (mainFrame.winfo_width() // 2) - (subLabelWidth // 2)
-    subLabel.place(x=subLabelX, y=100)
-
-    searchButtonWidth = searchButton.winfo_width()
-    searchBoxWidth = searchBox.winfo_width()
-    searchButtonX = (mainFrame.winfo_width() // 2) - (searchButtonWidth // 2)
-    searchBoxX = (mainFrame.winfo_width() // 2) - (searchBoxWidth // 2)
-    searchButton.place(x=searchButtonX, y=190)
-    searchBox.place(x=searchBoxX, y=155)
 
     # Run the main loop
     window.mainloop()
