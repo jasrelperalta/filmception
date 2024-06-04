@@ -106,13 +106,6 @@ def searchMovie(window):
     searchBox = tk.Entry(mainFrame, width=40, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor)
     searchBox.pack(pady=20)
 
-    # Create Search Button beside the Search Box
-    searchButton = tk.Button(mainFrame, text="Search", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
-    searchButton.pack(pady=20)
-
-    # Get the text from the search box and search for the movie
-    searchButton.config(command=lambda: findMovie(window, searchBox.get()))
-
     # Initialize variables containing genre labels to be used for checkboxes
     actionCheck = tk.IntVar()
     adventureCheck = tk.IntVar()
@@ -125,43 +118,139 @@ def searchMovie(window):
     thrillerCheck = tk.IntVar()
 
     # Create the genre checkboxes
-    actionBox = tk.Checkbutton(mainFrame, text="Action", variable=actionCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
+    actionBox = tk.Checkbutton(mainFrame, text="Action", variable=actionCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    adventureBox = tk.Checkbutton(mainFrame, text="Adventure", variable=adventureCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    animationBox = tk.Checkbutton(mainFrame, text="Animation", variable=animationCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    comedyBox = tk.Checkbutton(mainFrame, text="Comedy", variable=comedyCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    crimeBox = tk.Checkbutton(mainFrame, text="Crime", variable=crimeCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    dramaBox = tk.Checkbutton(mainFrame, text="Drama", variable=dramaCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    fantasyBox = tk.Checkbutton(mainFrame, text="Fantasy", variable=fantasyCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    romanceBox = tk.Checkbutton(mainFrame, text="Romance", variable=romanceCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+    thrillerBox = tk.Checkbutton(mainFrame, text="Thriller", variable=thrillerCheck, onvalue=1, offvalue=0, font=("Ubuntu Regular", 12), bg=bgColor, borderwidth=0, highlightthickness=0, height=1, width=10)
+
+    # Pack the checkboxes
     actionBox.pack(pady=10)
-    adventureBox = tk.Checkbutton(mainFrame, text="Adventure", variable=adventureCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     adventureBox.pack(pady=10)
-    animationBox = tk.Checkbutton(mainFrame, text="Animation", variable=animationCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     animationBox.pack(pady=10)
-    comedyBox = tk.Checkbutton(mainFrame, text="Comedy", variable=comedyCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     comedyBox.pack(pady=10)
-    crimeBox = tk.Checkbutton(mainFrame, text="Crime", variable=crimeCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     crimeBox.pack(pady=10)
-    dramaBox = tk.Checkbutton(mainFrame, text="Drama", variable=dramaCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     dramaBox.pack(pady=10)
-    fantasyBox = tk.Checkbutton(mainFrame, text="Fantasy", variable=fantasyCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     fantasyBox.pack(pady=10)
-    romanceBox = tk.Checkbutton(mainFrame, text="Romance", variable=romanceCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     romanceBox.pack(pady=10)
-    thrillerBox = tk.Checkbutton(mainFrame, text="Thriller", variable=thrillerCheck, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, borderwidth=0, highlightthickness=0)
     thrillerBox.pack(pady=10)
-    
+
+    # Create Search Button beside the Search Box
+    latestSearchButton = tk.Button(mainFrame, text="Latest Search", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
+    latestSearchButton.pack(pady=10)
+
+    # Get the text from the search box and search for the movie
+    latestSearchButton.config(command=lambda: latestSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, animationCheck, comedyCheck, crimeCheck, dramaCheck, fantasyCheck, romanceCheck, thrillerCheck))
+
+    # Create Search Button beside the Search Box
+    randomSearchButton = tk.Button(mainFrame, text="Random Search", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, highlightthickness = 0)
+    randomSearchButton.pack(pady=10)
+
+    # Get the text from the search box and search for the movie
+    randomSearchButton.config(command=lambda: randomSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, animationCheck, comedyCheck, crimeCheck, dramaCheck, fantasyCheck, romanceCheck, thrillerCheck))
+
+
     mainFrame.update_idletasks()
 
     # Run the main loop
     window.mainloop()
 
-    return window
+
+# Latest Search Movie handler function
+def latestSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, animationCheck, comedyCheck, crimeCheck, dramaCheck, fantasyCheck, romanceCheck, thrillerCheck):
+    # Check the values of the checkboxes and create a genre string to be used in the search connected by AND operator
+    genreString = ""
+
+    if actionCheck.get() == 1:
+        genreString += "genre LIKE '%Action%' AND "
+    if adventureCheck.get() == 1:
+        genreString += "genre LIKE '%Adventure%' AND "
+    if animationCheck.get() == 1:
+        genreString += "genre LIKE '%Animation%' AND "
+    if comedyCheck.get() == 1:
+        genreString += "genre LIKE '%Comedy%' AND "
+    if crimeCheck.get() == 1:
+        genreString += "genre LIKE '%Crime%' AND "
+    if dramaCheck.get() == 1:
+        genreString += "genre LIKE '%Drama%' AND "
+    if fantasyCheck.get() == 1:
+        genreString += "genre LIKE '%Fantasy%' AND "
+    if romanceCheck.get() == 1:
+        genreString += "genre LIKE '%Romance%' AND "
+    if thrillerCheck.get() == 1:
+        genreString += "genre LIKE '%Thriller%' AND "
+
+    # Remove the ending AND operator
+    genreString = genreString[:-5]
+
+
+    # Check if the search box is empty
+    if (searchBox.get() == "" and genreString == ""):
+        print("Search box is empty!")
+        return
+    # Create the query string
+    queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' AND {genreString} ORDER BY year DESC"
+
+    print(queryString)
+
+    findMovie(window, queryString)
+
+# Random Search Movie handler function
+def randomSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, animationCheck, comedyCheck, crimeCheck, dramaCheck, fantasyCheck, romanceCheck, thrillerCheck):
+    # Check the values of the checkboxes and create a genre string to be used in the search connected by AND operator
+    genreString = ""
+
+    if actionCheck.get() == 1:
+        genreString += "genre LIKE '%Action%' AND "
+    if adventureCheck.get() == 1:
+        genreString += "genre LIKE '%Adventure%' AND "
+    if animationCheck.get() == 1:
+        genreString += "genre LIKE '%Animation%' AND "
+    if comedyCheck.get() == 1:
+        genreString += "genre LIKE '%Comedy%' AND "
+    if crimeCheck.get() == 1:
+        genreString += "genre LIKE '%Crime%' AND "
+    if dramaCheck.get() == 1:
+        genreString += "genre LIKE '%Drama%' AND "
+    if fantasyCheck.get() == 1:
+        genreString += "genre LIKE '%Fantasy%' AND "
+    if romanceCheck.get() == 1:
+        genreString += "genre LIKE '%Romance%' AND "
+    if thrillerCheck.get() == 1:
+        genreString += "genre LIKE '%Thriller%' AND "
+
+    # Remove the ending AND operator
+    genreString = genreString[:-5]
+
+    # Check if the search box is empty
+    if (searchBox.get() == "" and genreString == ""):
+        print("Search box is empty!")
+        return
+    # Create the query string
+    queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY RANDOM()"
+
+    print(queryString)
+
+    findMovie(window, queryString)
+    
+
 
 # Find Movie function
-def findMovie(window, movieName):
-    print(f"Find Movie: {movieName}")
+def findMovie(window, queryString):
+    print(f"Find Movie: {queryString}")
     # Connect to the database
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # Search for the movie sorted by year in descending order
-    c.execute("SELECT * FROM films WHERE title LIKE ? ORDER BY year DESC", (f"%{movieName}%",))
+    # Search for the movie
+    c.execute(queryString)
+
     # Get the results of the search in paginated form
-    results = c.fetchall()
+    results = c.fetchmany(40)
 
     # Call the searchResults function
     searchResults(window, results)
@@ -189,11 +278,11 @@ def searchResults(window, results):
     images = []
     
     # Create a scrollable frame for the results
-    canvas = tk.Canvas(mainFrame, bg=bgColor)
+    canvas = tk.Canvas(mainFrame, bg=bgColor, borderwidth=0, highlightthickness=0)
     canvas.pack(side="top", fill="both", expand=True, pady=10, padx=10)
 
-    resultsFrame = tk.Frame(canvas, bg=bgColor)
-    resultsFrame.pack(fill="both")
+    resultsFrame = tk.Frame(canvas, bg=bgColor, borderwidth=0, highlightthickness=0)
+    resultsFrame.pack(fill="both", expand=True)
 
     scrollbar = tk.Scrollbar(canvas, orient="vertical", command=canvas.yview)
     scrollbar.pack(side="right", fill="y")
