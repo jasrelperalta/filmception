@@ -319,8 +319,6 @@ def searchResults(window, results):
     
 # Show Movie function
 def showMovie(window, movie):
-    print(movie)
-    # create a canvas to display the results
     # Create the main frame
     mainFrame = tk.Frame(window, width=720, height=640, bg=bgColor)
     mainFrame.grid(row=0, column=0)
@@ -336,10 +334,8 @@ def showMovie(window, movie):
     # Insert image into the canvas
     poster = Image.open(f"./img/posters/{movie[0]}.jpg")
     poster = poster.resize((250, 375), Image.ANTIALIAS)
-    poster = ImageTk.PhotoImage(poster)
     images.append(poster)
-
-    tk.Label(canvas, image=poster).grid(row=0, column=0)
+    poster = ImageTk.PhotoImage(poster)
 
     # Temporary string for genre
     tempString = ""
@@ -348,24 +344,52 @@ def showMovie(window, movie):
         tempString += f"{genre}, "
     tempString = tempString[:-2]
 
+    # Temporary string for genre list
+    tempStringList = ""
+    for genre in movie[6].strip("[]").strip().split(","):
+        genre = genre.strip(" '").strip("'")
+        tempStringList += f"genre LIKE '%{genre}%' AND "
+    tempStringList = tempStringList[:-5]
+    
+    
+    # Create the query string
+    queryString = f"SELECT * FROM films WHERE title LIKE '%%' AND {tempStringList} ORDER BY year DESC"
+
+
+    # Create the poster button that will show similar movies
+    tk.Button(canvas, image=poster, command=lambda: findMovie(window, queryString)).pack()
+
     # Create the details labels
-    tk.Label(canvas, text=f"Title: {movie[1]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=1, column=0)
-    tk.Label(canvas, text=f"Year: {movie[2]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=2, column=0)
-    tk.Label(canvas, text=f"Director: {movie[3]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=3, column=0)
-    tk.Label(canvas, text=f"Genre: {tempString}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=4, column=0)
+    tk.Label(canvas, text=f"Title: {movie[1]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack()
+    tk.Label(canvas, text=f"Year: {movie[2]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack()
+    tk.Label(canvas, text=f"Director: {movie[3]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack()
+    tk.Label(canvas, text=f"Genre: {tempString}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).pack()
 
     # Create the scrollable synopsis label
     synopsisCanvas = tk.Canvas(mainFrame, bg=bgColor, borderwidth=0, highlightthickness=0)
-    synopsisCanvas.pack(pady=10)
+    synopsisCanvas.pack(pady=2)
+
+    # Create the scrollable frame for the synopsis
+    synopsisFrame = tk.Frame(synopsisCanvas, bg=bgColor, borderwidth=0, highlightthickness=0)
+    synopsisFrame.pack(fill="both", expand=True)
+
+    scrollbar = tk.Scrollbar(synopsisCanvas, orient="vertical", command=synopsisCanvas.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    synopsisCanvas.configure(yscrollcommand=scrollbar.set)
+    synopsisCanvas.create_window((0,0), window=synopsisFrame, anchor="nw")
+    synopsisFrame.bind("<Configure>", lambda event, canvas=synopsisCanvas: onFrameConfigure(canvas))
 
     # Create the synopsis label
     synopsisLabel = tk.Label(synopsisCanvas, text=f"Synopsis:\n{movie[4]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, wraplength=600, justify="center")
     synopsisLabel.pack()
-
-
     
     # Center the label and buttons
     mainFrame.update_idletasks()
+
+    # Run the main loop
+    window.mainloop()
+
 
 
 
@@ -425,7 +449,6 @@ def handleResults(results):
 
 # Find similar movies function
 def findSimilarMovies(window, results):
-    print("Genres predicted w threshold:", results)
     print("Find Similar Movies")
     # Connect to the database
     conn = sqlite3.connect(DB_NAME)
@@ -464,7 +487,7 @@ def showPredictedMovie(window, results, filename):
     images = []
 
     # Create a canvas to display the image and the genre labels beside it, place canvas under the sub label
-    canvas = tk.Canvas(mainFrame, bg=bgColor)
+    canvas = tk.Canvas(mainFrame, bg=bgColor, borderwidth=0, highlightthickness=0)
     canvas.pack(pady=10)
 
 
@@ -517,11 +540,6 @@ def uploadPoster(window):
     
     # predict the genre of the movie using the model
     results = model.predict(image)
-
-    # Show the results of the prediction
-    print("Results of the prediction")
-    for i in range(len(results[0])):
-        print(f"{genreList[i]}: {results[0][i]}")
 
     # Call the showPredictedMovie function
     showPredictedMovie(window, results, filename)
