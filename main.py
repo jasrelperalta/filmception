@@ -304,8 +304,11 @@ def searchResults(window, results):
         tempString = f"{results[i][1]} ({tempDate})"
         tempButton = tk.Button(resultsFrame, image=poster, command=lambda i=i: showMovie(window, results[i])).grid(row=counter, column=0)
         buttonList.append(tempButton)
-        tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=counter, column=1)
-        
+        tk.Label(resultsFrame, text=tempString, font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, justify="center").grid(row=counter, column=1)
+
+        resultsFrame.columnconfigure(0, weight=1)
+        resultsFrame.columnconfigure(1, weight=2)
+
         counter += 1
         
     # Center the label and buttons
