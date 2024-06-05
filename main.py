@@ -190,10 +190,15 @@ def latestSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, ani
 
     # Check if the search box is empty
     if (searchBox.get() == "" and genreString == ""):
-        print("Search box is empty!")
+        print("Search box and checkboxes are empty!")
         return
     # Create the query string
-    queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' AND {genreString} ORDER BY year DESC"
+    if searchBox.get() == "":
+        queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY year DESC"
+    elif genreString == "":
+        queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' ORDER BY year DESC"
+    else:
+        queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' AND {genreString} ORDER BY year DESC"
 
     print(queryString)
 
@@ -228,10 +233,15 @@ def randomSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, ani
 
     # Check if the search box is empty
     if (searchBox.get() == "" and genreString == ""):
-        print("Search box is empty!")
+        print("Search box and checkboxes are empty!")
         return
     # Create the query string
-    queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY RANDOM()"
+    if searchBox.get() == "":
+        queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY year DESC"
+    elif genreString == "":
+        queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' ORDER BY year DESC"
+    else:
+        queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' AND {genreString} ORDER BY year DESC"
 
     print(queryString)
 
