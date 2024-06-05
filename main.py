@@ -319,8 +319,56 @@ def searchResults(window, results):
     
 # Show Movie function
 def showMovie(window, movie):
-    print("Show Movie")
     print(movie)
+    # create a canvas to display the results
+    # Create the main frame
+    mainFrame = tk.Frame(window, width=720, height=640, bg=bgColor)
+    mainFrame.grid(row=0, column=0)
+    mainFrame.pack_propagate(False)
+
+    # Create a button for each result with the poster and title
+    images = []
+
+    # Create a canvas to display the movie poster along with the details
+    canvas = tk.Canvas(mainFrame, bg=bgColor, borderwidth=0, highlightthickness=0)
+    canvas.pack(pady=10)
+
+    # Insert image into the canvas
+    poster = Image.open(f"./img/posters/{movie[0]}.jpg")
+    poster = poster.resize((250, 375), Image.ANTIALIAS)
+    poster = ImageTk.PhotoImage(poster)
+    images.append(poster)
+
+    tk.Label(canvas, image=poster).grid(row=0, column=0)
+
+    # Temporary string for genre
+    tempString = ""
+    for genre in movie[6].strip("[]").strip().split(","):
+        genre = genre.strip(" '").strip("'")
+        tempString += f"{genre}, "
+    tempString = tempString[:-2]
+
+    # Create the details labels
+    tk.Label(canvas, text=f"Title: {movie[1]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=1, column=0)
+    tk.Label(canvas, text=f"Year: {movie[2]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=2, column=0)
+    tk.Label(canvas, text=f"Director: {movie[3]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=3, column=0)
+    tk.Label(canvas, text=f"Genre: {tempString}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor).grid(row=4, column=0)
+
+    # Create the scrollable synopsis label
+    synopsisCanvas = tk.Canvas(mainFrame, bg=bgColor, borderwidth=0, highlightthickness=0)
+    synopsisCanvas.pack(pady=10)
+
+    # Create the synopsis label
+    synopsisLabel = tk.Label(synopsisCanvas, text=f"Synopsis:\n{movie[4]}", font=("Ubuntu Regular", 12), bg=bgColor, fg=txtColor, wraplength=600, justify="center")
+    synopsisLabel.pack()
+
+
+    
+    # Center the label and buttons
+    mainFrame.update_idletasks()
+
+
+
 
 # Handle the results of the prediction using thresholds
 def handleResults(results):
