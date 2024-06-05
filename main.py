@@ -197,6 +197,8 @@ def latestSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, ani
         queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY year DESC"
     elif genreString == "":
         queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' ORDER BY year DESC"
+    elif searchBox.get() == " " and genreString == "":
+        queryString = f"SELECT * FROM films ORDER BY year DESC"
     else:
         queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' AND {genreString} ORDER BY year DESC"
 
@@ -238,6 +240,7 @@ def randomSearchMovieHandler(window, searchBox, actionCheck, adventureCheck, ani
     # Create the query string
     if searchBox.get() == "":
         queryString = f"SELECT * FROM films WHERE {genreString} ORDER BY year DESC"
+
     elif genreString == "":
         queryString = f"SELECT * FROM films WHERE title LIKE '%{searchBox.get()}%' ORDER BY year DESC"
     else:
